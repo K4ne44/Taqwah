@@ -253,13 +253,26 @@ const RECITER_SERVERS: Record<string, string> = {
   "ar.saaboreymaah": "https://server8.mp3quran.net/afs",
 };
 
+const AYAH_AUDIO_SERVERS: Record<string, string> = {
+  "ar.alafasy": "Alafasy_128kbps",
+  "ar.husary": "Husary_128kbps",
+  "ar.minshawi": "Minshawy_Mujawwad_192kbps",
+  "ar.minshawimujawwad": "Minshawy_Mujawwad_192kbps",
+  "ar.abdurrahmaanassudais": "Abdul_Basit_Murattal_192kbps",
+  "ar.abdulbasit": "Abdul_Basit_Murattal_192kbps",
+  "ar.hudhaify": "Hudhaify_128kbps",
+  "ar.muhammadjibreel": "Muhammad_Jibreel_128kbps",
+};
+
 export function getReciterUrl(surahNumber: number, reciter: string = "ar.yasseraldossari"): string {
   const server = RECITER_SERVERS[reciter] || RECITER_SERVERS["ar.alafasy"];
   return `${server}/${String(surahNumber).padStart(3, "0")}.mp3`;
 }
 
 export function getAyahAudioUrl(surahNumber: number, ayahNumber: number, reciter: string = "ar.yasseraldossari"): string {
-  return getReciterUrl(surahNumber, reciter);
+  const folder = AYAH_AUDIO_SERVERS[reciter] || "Alafasy_128kbps";
+  const globalNumber = getGlobalAyahNumber(surahNumber, ayahNumber);
+  return `https://everyayah.com/data/${folder}/${String(globalNumber).padStart(6, "0")}.mp3`;
 }
 
 export function getGlobalAyahNumber(surahNumber: number, ayahNumber: number): number {

@@ -215,6 +215,12 @@ export default function DashboardPage() {
 
       <DailyAyahCard />
 
+      <DailyDuaCard />
+
+      <DailyHadithCard />
+
+      <SunnahProgressCard />
+
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-white mb-2">Daily Reminder</h3>
         <p className="text-gray-300 text-sm leading-relaxed italic">
@@ -223,6 +229,98 @@ export default function DashboardPage() {
         <p className="text-gray-500 text-xs mt-2">Every small step counts. Keep moving forward.</p>
       </div>
     </div>
+  );
+}
+
+function DailyHadithCard() {
+  const [hadith, setHadith] = useState<{ id: string; translation: string; narrator: string; bookName: string; hadithNumber: number } | null>(null);
+
+  useEffect(() => {
+    import("@/lib/hadith-data").then(({ ALL_HADITHS }) => {
+      const dayOfYear = Math.floor(
+        (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
+      );
+      setHadith(ALL_HADITHS[dayOfYear % ALL_HADITHS.length]);
+    });
+  }, []);
+
+  if (!hadith) return null;
+
+  return (
+    <a href={`/hadiths/hadith/${hadith.id}`} className="block bg-gradient-to-br from-gray-900 to-gray-800 border border-blue-500/10 rounded-2xl p-6 hover:border-blue-500/30 transition group">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+          <span className="text-lg">&#128218;</span>
+        </div>
+        <h3 className="text-sm font-semibold text-blue-400">Daily Hadith</h3>
+      </div>
+      <p className="text-gray-300 text-sm leading-relaxed italic mb-3">&ldquo;{hadith.translation}&rdquo;</p>
+      <p className="text-xs text-gray-500">Narrated by {hadith.narrator} &middot; {hadith.bookName} #{hadith.hadithNumber}</p>
+    </a>
+  );
+}
+
+function SunnahProgressCard() {
+  const [stats, setStats] = useState({ completed: 0, total: 0, streak: 0 });
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (!token) return;
+    fetch("/api/sunnahs/progress?stats=true", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => setStats({ completed: d.todayCompleted || 0, total: d.todayTotal || 0, streak: d.currentStreak || 0 }));
+  }, [token]);
+
+  return (
+    <a href="/sunnahs" className="block bg-gradient-to-br from-gray-900 to-gray-800 border border-purple-500/10 rounded-2xl p-6 hover:border-purple-500/30 transition group">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+          <span className="text-lg">&#10003;</span>
+        </div>
+        <h3 className="text-sm font-semibold text-purple-400">Sunnah Today</h3>
+      </div>
+      <div className="flex items-center gap-6">
+        <div>
+          <p className="text-2xl font-bold text-white">{stats.completed}/{stats.total || "—"}</p>
+          <p className="text-xs text-gray-500">Completed</p>
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-emerald-400">{stats.streak}</p>
+          <p className="text-xs text-gray-500">Day Streak</p>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function DailyDuaCard() {
+  const [dua, setDua] = useState<{ id: string; title: string; arabic: string; translation: string; source: string } | null>(null);
+
+  useEffect(() => {
+    import("@/lib/dua-data").then(({ ALL_DUAS }) => {
+      const dayOfYear = Math.floor(
+        (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
+      );
+      setDua(ALL_DUAS[dayOfYear % ALL_DUAS.length]);
+    });
+  }, []);
+
+  if (!dua) return null;
+
+  return (
+    <a href={`/duas/dua/${dua.id}`} className="block bg-gradient-to-br from-gray-900 to-gray-800 border border-amber-500/10 rounded-2xl p-6 hover:border-amber-500/30 transition group">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+          <span className="text-lg">&#128591;</span>
+        </div>
+        <h3 className="text-sm font-semibold text-amber-400">Daily Dua</h3>
+      </div>
+      <p className="text-right text-2xl mb-3 leading-loose text-white/90 group-hover:text-amber-400 transition" dir="rtl" style={{ fontFamily: "'Amiri', 'Scheherazade New', serif" }}>
+        {dua.arabic}
+      </p>
+      <p className="text-gray-400 text-sm leading-relaxed italic mb-2">&ldquo;{dua.translation}&rdquo;</p>
+      <p className="text-xs text-gray-500">{dua.title} &middot; {dua.source}</p>
+    </a>
   );
 }
 

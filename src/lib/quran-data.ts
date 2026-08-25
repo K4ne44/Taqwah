@@ -240,19 +240,26 @@ export function searchQuran(query: string): DailyAyah[] {
   );
 }
 
+const RECITER_SERVERS: Record<string, string> = {
+  "ar.alafasy": "https://server8.mp3quran.net/afs",
+  "ar.yasseraldossari": "https://server11.mp3quran.net/yasser",
+  "ar.ahmedajamy": "https://server10.mp3quran.net/ajm",
+  "ar.minshawi": "https://server10.mp3quran.net/minsh1387",
+  "ar.husary": "https://server7.mp3quran.net/husary",
+  "ar.husarymujawwad": "https://server7.mp3quran.net/husarym",
+  "ar.abdurrahmaanassudais": "https://server7.mp3quran.net/sudais",
+  "ar.shaatree": "https://server7.mp3quran.net/shur",
+  "ar.minshawimujawwad": "https://server7.mp3quran.net/minsh",
+  "ar.saaboreymaah": "https://server8.mp3quran.net/afs",
+};
+
 export function getReciterUrl(surahNumber: number, reciter: string = "ar.yasseraldossari"): string {
-  if (reciter === "ibi-idris") {
-    return `https://podcasts.qurancentral.com/ibi-idris/${String(surahNumber).padStart(3, "0")}.mp3`;
-  }
-  return `https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surahNumber}.mp3`;
+  const server = RECITER_SERVERS[reciter] || RECITER_SERVERS["ar.alafasy"];
+  return `${server}/${String(surahNumber).padStart(3, "0")}.mp3`;
 }
 
 export function getAyahAudioUrl(surahNumber: number, ayahNumber: number, reciter: string = "ar.yasseraldossari"): string {
-  if (reciter === "ibi-idris") {
-    return `https://podcasts.qurancentral.com/ibi-idris/${String(surahNumber).padStart(3, "0")}.mp3`;
-  }
-  const globalNumber = getGlobalAyahNumber(surahNumber, ayahNumber);
-  return `https://cdn.islamic.network/quran/audio/128/${reciter}/${globalNumber}.mp3`;
+  return getReciterUrl(surahNumber, reciter);
 }
 
 export function getGlobalAyahNumber(surahNumber: number, ayahNumber: number): number {
@@ -268,16 +275,11 @@ export function getGlobalAyahNumber(surahNumber: number, ayahNumber: number): nu
 }
 
 export const RECITERS = [
+  { id: "ar.yasseraldossari", name: "Yasser Al-Dosari" },
   { id: "ar.alafasy", name: "Mishary Rashid Alafasy" },
   { id: "ar.abdurrahmaanassudais", name: "Abdur-Rahmaan As-Sudais" },
-  { id: "ar.yasseraldossari", name: "Yasser Al-Dosari" },
-  { id: "ibi-idris", name: "Ibi Idris" },
-  { id: "ar.saaboreymaah", name: "Saaboreymaah" },
   { id: "ar.ahmedajamy", name: "Ahmed ibn Ali al-Ajamy" },
-  { id: "ar.husary", name: "Mahmoud Khalil Al-Husary" },
-  { id: "ar.husarymujawwad", name: "Al-Husary (Mujawwad)" },
   { id: "ar.minshawi", name: "Muhammad Siddiq Al-Minshawi" },
-  { id: "ar.minshawimujawwad", name: "Al-Minshawi (Mujawwad)" },
   { id: "ar.shaatree", name: "Abu Bakr Al-Shaatree" },
-  { id: "en.sahih", name: "Sahih International (English)" },
+  { id: "ar.husary", name: "Mahmoud Khalil Al-Husary" },
 ];

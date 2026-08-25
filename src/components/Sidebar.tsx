@@ -12,6 +12,9 @@ const navItems = [
   { href: "/analytics", label: "Analytics", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
   { href: "/prayers", label: "Prayers", icon: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" },
   { href: "/quran", label: "Quran", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253", hasSub: true },
+  { href: "/duas", label: "Dua Library", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" },
+  { href: "/hadiths", label: "Hadiths", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253", hasSub: true },
+  { href: "/sunnahs", label: "Sunnah Tracker", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
   { href: "/dhikr", label: "Dhikr", icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" },
   { href: "/goals", label: "Goals", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
   { href: "/motivation", label: "Motivation", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" },
@@ -22,10 +25,13 @@ const navItems = [
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [quranExpanded, setQuranExpanded] = useState(false);
+  const [hadithExpanded, setHadithExpanded] = useState(false);
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const isQuranActive = pathname.startsWith("/quran");
+  const isHadithActive = pathname.startsWith("/hadiths");
+  const isSunnahActive = pathname.startsWith("/sunnahs");
 
   const quranSubItems = [
     { href: "/quran", label: "Browse" },
@@ -33,6 +39,12 @@ export default function Sidebar() {
     { href: "/quran/bookmarks", label: "Bookmarks" },
     { href: "/quran/memorize", label: "Memorize" },
     { href: "/quran/reflections", label: "Reflections" },
+  ];
+
+  const hadithSubItems = [
+    { href: "/hadiths", label: "Browse" },
+    { href: "/hadiths/search", label: "Search" },
+    { href: "/hadiths/collections", label: "Collections" },
   ];
 
   const content = (
@@ -51,15 +63,21 @@ export default function Sidebar() {
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = item.hasSub ? isQuranActive : pathname === item.href;
+          const isQuranItem = item.href === "/quran";
+          const isHadithItem = item.href === "/hadiths";
+          const isActive = isQuranItem ? isQuranActive : isHadithItem ? isHadithActive : pathname === item.href;
 
           if (item.hasSub) {
+            const expanded = isQuranItem ? quranExpanded || isQuranActive : isHadithItem ? hadithExpanded || isHadithActive : false;
+            const setExpanded = isQuranItem ? setQuranExpanded : isHadithItem ? setHadithExpanded : () => {};
+            const subItems = isQuranItem ? quranSubItems : isHadithItem ? hadithSubItems : [];
+
             return (
               <div key={item.href}>
                 <button
                   onClick={() => {
-                    setQuranExpanded(!quranExpanded);
-                    if (!isQuranActive) {
+                    setExpanded(!expanded);
+                    if (!isActive) {
                       window.location.href = item.href;
                     }
                   }}
@@ -73,14 +91,14 @@ export default function Sidebar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                   </svg>
                   <span className="flex-1 text-left">{item.label}</span>
-                  <svg className={`w-4 h-4 transition-transform ${quranExpanded || isQuranActive ? "rotate-90" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className={`w-4 h-4 transition-transform ${expanded ? "rotate-90" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-                {(quranExpanded || isQuranActive) && (
+                {expanded && (
                   <div className="ml-6 mt-1 space-y-1">
-                    {quranSubItems.map((sub) => {
-                      const subActive = pathname === sub.href || (sub.href === "/quran" && pathname === "/quran");
+                    {subItems.map((sub) => {
+                      const subActive = pathname === sub.href || (sub.href === item.href && pathname === item.href);
                       return (
                         <Link
                           key={sub.href}

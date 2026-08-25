@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
+    console.error("Register error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -213,6 +213,8 @@ export default function DashboardPage() {
         </div>
       )}
 
+      <DailyAyahCard />
+
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-white mb-2">Daily Reminder</h3>
         <p className="text-gray-300 text-sm leading-relaxed italic">
@@ -221,6 +223,36 @@ export default function DashboardPage() {
         <p className="text-gray-500 text-xs mt-2">Every small step counts. Keep moving forward.</p>
       </div>
     </div>
+  );
+}
+
+function DailyAyahCard() {
+  const [ayah, setAyah] = useState<{ surahNumber: number; ayahNumber: number; surahName: string; surahEnglishName: string; arabicText: string; translation: string } | null>(null);
+
+  useEffect(() => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    import("@/lib/quran-data").then(({ DAILY_AYAHS }) => {
+      setAyah(DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length]);
+    });
+  }, []);
+
+  if (!ayah) return null;
+
+  return (
+    <a href={`/quran/surah/${ayah.surahNumber}`} className="block bg-gradient-to-br from-gray-900 to-gray-800 border border-emerald-500/10 rounded-2xl p-6 hover:border-emerald-500/30 transition group">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+          <span className="text-lg">&#128220;</span>
+        </div>
+        <h3 className="text-sm font-semibold text-emerald-400">Daily Ayah</h3>
+      </div>
+      <p className="text-right text-2xl mb-3 leading-loose text-white/90 group-hover:text-emerald-400 transition" dir="rtl" style={{ fontFamily: "'Amiri', 'Scheherazade New', serif" }}>
+        {ayah.arabicText}
+      </p>
+      <p className="text-gray-400 text-sm leading-relaxed italic mb-2">&ldquo;{ayah.translation}&rdquo;</p>
+      <p className="text-xs text-gray-500">{ayah.surahEnglishName} ({ayah.surahName}) &middot; Ayah {ayah.ayahNumber}</p>
+    </a>
   );
 }
 

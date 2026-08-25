@@ -37,17 +37,19 @@ export default function QuranPage() {
       setAudioRef(null);
       setAudioSurah(null);
     }
+    setAudioSurah(surahNumber);
     try {
       const url = getReciterUrl(surahNumber, reciter);
-      console.log("Playing surah audio:", url);
-      const audio = new Audio(url);
-      audio.onerror = (e) => console.error("Audio error:", e, audio.error);
-      audio.onended = () => { setAudioSurah(null); setAudioRef(null); };
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const audio = new Audio(blobUrl);
+      audio.onended = () => { setAudioSurah(null); setAudioRef(null); URL.revokeObjectURL(blobUrl); };
+      audio.onerror = () => { setAudioSurah(null); setAudioRef(null); URL.revokeObjectURL(blobUrl); };
       await audio.play();
       setAudioRef(audio);
-      setAudioSurah(surahNumber);
-    } catch (err) {
-      console.error("Failed to play surah:", err);
+    } catch {
       setAudioSurah(null);
       setAudioRef(null);
     }

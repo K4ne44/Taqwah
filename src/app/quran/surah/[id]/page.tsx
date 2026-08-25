@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SURAH_LIST, RECITERS, getSurahByNumber, getAyahAudioUrl } from "@/lib/quran-data";
@@ -90,25 +90,38 @@ export default function SurahPage() {
       });
   }, [token]);
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const playAyah = async (ayahNumber: number) => {
-    if (audio) { audio.pause(); audio.src = ""; setAudio(null); setPlayingAyah(null); }
+    if (audio) { audio.pause(); audio.src = ""; setAudio(null); }
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setPlayingAyah(ayahNumber);
     try {
       const url = getAyahAudioUrl(surahNum, ayahNumber, reciter);
-      console.log("Playing ayah audio:", url);
-      const a = new Audio(url);
-      a.onerror = (e) => console.error("Audio error:", e, a.error);
-      a.onended = () => { setPlayingAyah(null); setAudio(null); };
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = new Audio(blobUrl);
+      a.onended = () => { setPlayingAyah(null); setAudio(null); URL.revokeObjectURL(blobUrl); };
+      a.onerror = () => { setPlayingAyah(null); setAudio(null); URL.revokeObjectURL(blobUrl); };
       await a.play();
       setAudio(a);
-      setPlayingAyah(ayahNumber);
-    } catch (err) {
-      console.error("Failed to play ayah:", err);
-      setPlayingAyah(null);
-      setAudio(null);
+    } catch {
+      if (!controller.signal.aborted) {
+        setPlayingAyah(null);
+        setAudio(null);
+      }
     }
   };
 
-  const stopAudio = () => { if (audio) { audio.pause(); setAudio(null); setPlayingAyah(null); } };
+  const stopAudio = () => {
+    if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
+    if (audio) { audio.pause(); audio.src = ""; setAudio(null); }
+    setPlayingAyah(null);
+  };
 
   const toggleBookmark = async (ayah: Ayah) => {
     if (!token) return;

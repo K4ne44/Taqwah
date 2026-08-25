@@ -30,20 +30,27 @@ export default function QuranPage() {
 
   const totalAyahs = SURAH_LIST.reduce((sum, s) => sum + s.numberOfAyahs, 0);
 
-  const playAudio = (surahNumber: number) => {
+  const playAudio = async (surahNumber: number) => {
     if (audioRef) {
       audioRef.pause();
+      audioRef.src = "";
       setAudioRef(null);
       setAudioSurah(null);
     }
-    const audio = new Audio(getReciterUrl(surahNumber, reciter));
-    audio.play().catch(() => {});
-    setAudioRef(audio);
-    setAudioSurah(surahNumber);
-    audio.onended = () => {
+    try {
+      const url = getReciterUrl(surahNumber, reciter);
+      console.log("Playing surah audio:", url);
+      const audio = new Audio(url);
+      audio.onerror = (e) => console.error("Audio error:", e, audio.error);
+      audio.onended = () => { setAudioSurah(null); setAudioRef(null); };
+      await audio.play();
+      setAudioRef(audio);
+      setAudioSurah(surahNumber);
+    } catch (err) {
+      console.error("Failed to play surah:", err);
       setAudioSurah(null);
       setAudioRef(null);
-    };
+    }
   };
 
   const stopAudio = () => {

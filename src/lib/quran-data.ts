@@ -266,13 +266,15 @@ const AYAH_AUDIO_SERVERS: Record<string, string> = {
 
 export function getReciterUrl(surahNumber: number, reciter: string = "ar.yasseraldossari"): string {
   const server = RECITER_SERVERS[reciter] || RECITER_SERVERS["ar.alafasy"];
-  return `${server}/${String(surahNumber).padStart(3, "0")}.mp3`;
+  const raw = `${server}/${String(surahNumber).padStart(3, "0")}.mp3`;
+  return `/api/audio/proxy?url=${encodeURIComponent(raw)}`;
 }
 
 export function getAyahAudioUrl(surahNumber: number, ayahNumber: number, reciter: string = "ar.yasseraldossari"): string {
   const folder = AYAH_AUDIO_SERVERS[reciter] || "Alafasy_128kbps";
   const globalNumber = getGlobalAyahNumber(surahNumber, ayahNumber);
-  return `https://everyayah.com/data/${folder}/${String(globalNumber).padStart(6, "0")}.mp3`;
+  const raw = `https://everyayah.com/data/${folder}/${String(globalNumber).padStart(6, "0")}.mp3`;
+  return `/api/audio/proxy?url=${encodeURIComponent(raw)}`;
 }
 
 export function getGlobalAyahNumber(surahNumber: number, ayahNumber: number): number {

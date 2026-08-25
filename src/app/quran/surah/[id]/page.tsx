@@ -90,13 +90,22 @@ export default function SurahPage() {
       });
   }, [token]);
 
-  const playAyah = (ayahNumber: number) => {
-    if (audio) { audio.pause(); setAudio(null); setPlayingAyah(null); }
-    const a = new Audio(getAyahAudioUrl(surahNum, ayahNumber, reciter));
-    a.play().catch(() => {});
-    setAudio(a);
-    setPlayingAyah(ayahNumber);
-    a.onended = () => { setPlayingAyah(null); setAudio(null); };
+  const playAyah = async (ayahNumber: number) => {
+    if (audio) { audio.pause(); audio.src = ""; setAudio(null); setPlayingAyah(null); }
+    try {
+      const url = getAyahAudioUrl(surahNum, ayahNumber, reciter);
+      console.log("Playing ayah audio:", url);
+      const a = new Audio(url);
+      a.onerror = (e) => console.error("Audio error:", e, a.error);
+      a.onended = () => { setPlayingAyah(null); setAudio(null); };
+      await a.play();
+      setAudio(a);
+      setPlayingAyah(ayahNumber);
+    } catch (err) {
+      console.error("Failed to play ayah:", err);
+      setPlayingAyah(null);
+      setAudio(null);
+    }
   };
 
   const stopAudio = () => { if (audio) { audio.pause(); setAudio(null); setPlayingAyah(null); } };
